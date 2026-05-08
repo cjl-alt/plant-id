@@ -1,0 +1,32 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main ]  # 仓库的主分支（如果是master就改成master）
+  workflow_dispatch:   # 允许手动触发构建
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 云端使用Ubuntu系统构建
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置JDK 17（Android构建推荐JDK 17/11）
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: 授予Gradle执行权限
+        run: chmod +x ./gradlew
+
+      - name: 构建Release APK
+        run: ./gradlew assembleRelease  # 构建正式版APK（debug版用assembleDebug）
+
+      - name: 上传APK作为构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: plant-id-apk
+          path: app/build/outputs/apk/release/*.apk  # APK输出路径（通用路径，若项目结构不同需调整）
